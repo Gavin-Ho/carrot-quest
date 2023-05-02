@@ -196,7 +196,10 @@ function App() {
     const moveClouds = () => {
       setClouds((clouds) => {
         // Move clouds downwards
-        return clouds.map((cloud) => ({ ...cloud, y: cloud.y + 3 }));
+        const newClouds = clouds.map((cloud) => ({ ...cloud, y: cloud.y + 3 }));
+
+        // Remove clouds that are outside the game border
+        return newClouds.filter((cloud) => cloud.y < GAMEBOX_HEIGHT);
       });
       if (gameOn) {
         moveCloudTimeout = setTimeout(moveClouds, 48);
@@ -244,11 +247,11 @@ function App() {
 
   return (
     <Div onKeyDown={handleKeyDown} onKeyUp={handleKeyUp} tabIndex="0">
-      <Title>🐷 PIGS ON THE WING</Title>
+      <Title>CARROT QUEST 🐷</Title>
       <StartGame start={startGame} status={promptStatus} />
       <GameOver restart={startGame} status={promptStatus} highscore={highscore} score={score} />
       <GameBox height={GAMEBOX_HEIGHT} width={GAMEBOX_WIDTH}>
-        <div className="text-2xl text-right m-3 font-bold text-gray-100 uppercase z-5">🥕: {score}</div>
+        <CarrotScore>{score} 🥕</CarrotScore>
         {obstacles.map((obstacle, index) => (
           <ObstacleBox key={index} top={obstacle.y} left={obstacle.x} height={OBS_HEIGHT} width={OBS_WIDTH} />
         ))}
@@ -269,28 +272,38 @@ const Div = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
-  background-color: #35536B;
-  background-image: url("https://www.transparenttextures.com/patterns/always-grey.png");
-  /* This is mostly intended for prototyping; please download the pattern and re-host for production environments. Thank you! */
+  background-color: #3B5377;
+  background-image: url("../images/always-grey.png");
 `
 const Title = styled.div`
-  margin-top: 15px; 
-  font-size: 32px;
-  font-weight: bold;
+  margin-top: 25px; 
+  font-size: 42px;
+  font-weight: 1000;
   color: #f5f5f5;
+  font-family: 'Braah One', sans-serif;
 `
 
 const GameBox = styled.div`
   position: relative;
   width: ${(props) => props.width}px;
   height: ${(props) => props.height}px;
-  top: 10px;
   background-color: #71A9F2;
   background-size: cover;
   border-style: solid;
   border-width: 3px;
   border-color: #2E383F;
   overflow: hidden;
+`
+// 
+const CarrotScore = styled.div`
+  position: relative;
+  text-align: right;
+  margin: 0.75rem;
+  font-size: 1.75rem;
+  line-height: 2rem;
+  font-weight: 700;
+  color: #ffffff;
+  z-index: 3;
 `
 
 const AirBalloon = styled.div`
