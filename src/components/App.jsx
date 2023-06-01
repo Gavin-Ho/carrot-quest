@@ -4,12 +4,13 @@ import styled from "styled-components";
 import StartGame from "./StartGame";
 import GameOver from "./GameOver";
 
+import balloonImage from "../images/balloon.png";
+
 var chew = new Audio('../audio/chew-cropped.mp3')
 chew.volume = 0.5;
 
 var gameoverSound = new Audio('../audio/mixkit-arcade-retro-game-over-213.wav');
 gameoverSound.volume = 0.5;
-
 
 const RATIO = 2;
 
@@ -310,7 +311,7 @@ const AirBalloon = styled.div`
   position: absolute;
   width: ${(props) => props.width}px;
   height: ${(props) => props.height}px;
-  background-image: ${(props) => props.animation}; 
+  background-image: ${balloonImage};
   background-size: cover;
   background-position: center;
   top: 475px;
