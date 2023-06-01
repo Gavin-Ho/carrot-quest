@@ -4,12 +4,11 @@ import styled from "styled-components";
 import StartGame from "./StartGame";
 import GameOver from "./GameOver";
 
-var chew = new Audio('../audio/chew-cropped.mp3')
+var chew = new Audio(process.env.PUBLIC_URL + '/audio/chew-cropped.mp3');
 chew.volume = 0.5;
 
 var gameoverSound = new Audio('../audio/mixkit-arcade-retro-game-over-213.wav');
 gameoverSound.volume = 0.5;
-
 
 const RATIO = 2;
 
