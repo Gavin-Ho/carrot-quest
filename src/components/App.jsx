@@ -89,7 +89,6 @@ function App() {
     }
   }
 
-
   //  Balloon movement
   function handleKeyDown(event) {
     if (event.key === "ArrowRight" && balloonPos < GAMEBOX_WIDTH - BALLOON_WIDTH) {
@@ -97,6 +96,19 @@ function App() {
     } else if (event.key === "ArrowLeft" && balloonPos > 0) {
       setPressedKey("ArrowLeft");
     }
+  }
+
+  function handleMouseDownLeft() {
+    setPressedKey("ArrowLeft");
+  }
+
+  function handleMouseDownRight() {
+    setPressedKey("ArrowRight");
+  }
+
+  function handleMouseUp() {
+    setPressedKey(null);
+    setBalloonAnimation("url('../images/balloon.png')");
   }
 
   function handleKeyUp(event) {
@@ -251,6 +263,10 @@ function App() {
       <StartGame start={startGame} status={promptStatus} />
       <GameOver restart={startGame} status={promptStatus} highscore={highscore} score={score} />
       <GameBox height={GAMEBOX_HEIGHT} width={GAMEBOX_WIDTH}>
+        <div className="w-full h-full flex">
+          <div className="w-[50%] h-full z-10" onMouseDown={handleMouseDownLeft} onMouseUp={handleMouseUp}></div>
+          <div className="w-[50%] h-full z-10" onMouseDown={handleMouseDownRight} onMouseUp={handleMouseUp}></div>
+        </div>
         <CarrotScore>{score} 🥕</CarrotScore>
         {obstacles.map((obstacle, index) => (
           <ObstacleBox key={index} top={obstacle.y} left={obstacle.x} height={OBS_HEIGHT} width={OBS_WIDTH} />

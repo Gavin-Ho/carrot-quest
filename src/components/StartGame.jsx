@@ -13,7 +13,7 @@ function StartGame(props) {
                 <div className="my-2 text-center">
                     Use the <span className="font-bold">left</span> and <span className="font-bold">right</span> arrows to move
                 </div>
-                <button onClick={props.start} type="button" className="bg-red-700 hover:bg-red-800 text-white font-bold py-2 px-4 mt-4 rounded uppercase">
+                <button onClick={props.start} type="button" className="bg-red-700 hover:bg-red-800 text-white font-bold py-2 px-4 mt-4 rounded uppercase" autoFocus>
                     Play
                 </button>
             </div>
