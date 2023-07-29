@@ -312,15 +312,15 @@ const GameBox = styled.div`
 `
 // 
 const CarrotScore = styled.div`
-  position: relative;
+  position: absolute;
+  top: 10px;
+  right: 10px;
   text-align: right;
-  margin: 0.75rem;
   font-size: 1.75rem;
-  line-height: 2rem;
   font-weight: 700;
   color: #ffffff;
-  z-index: 3;
-`
+  z-index: 300;
+`;
 
 const AirBalloon = styled.div`
   position: absolute;
