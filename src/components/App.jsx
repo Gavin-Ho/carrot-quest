@@ -90,13 +90,30 @@ function App() {
   }
 
   //  Balloon movement
-  function handleKeyDown(event) {
-    if (event.key === "ArrowRight" && balloonPos < GAMEBOX_WIDTH - BALLOON_WIDTH) {
-      setPressedKey("ArrowRight");
-    } else if (event.key === "ArrowLeft" && balloonPos > 0) {
-      setPressedKey("ArrowLeft");
-    }
-  }
+  useEffect(() => {
+    const handleKeyDown = (event) => {
+      if (event.key === "ArrowRight" && balloonPos < GAMEBOX_WIDTH - BALLOON_WIDTH) {
+        setPressedKey("ArrowRight");
+      } else if (event.key === "ArrowLeft" && balloonPos > 0) {
+        setPressedKey("ArrowLeft");
+      }
+    };
+
+    const handleKeyUp = (event) => {
+      if (event.key === pressedKey) {
+        setPressedKey(null);
+        setBalloonAnimation("url('../images/balloon.png')");
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    document.addEventListener('keyup', handleKeyUp);
+
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+      document.removeEventListener('keyup', handleKeyUp);
+    };
+  }, [pressedKey, balloonPos]);
 
   function handleMouseDownLeft() {
     setPressedKey("ArrowLeft");
@@ -111,12 +128,7 @@ function App() {
     setBalloonAnimation("url('../images/balloon.png')");
   }
 
-  function handleKeyUp(event) {
-    if (event.key === pressedKey) {
-      setPressedKey(null);
-      setBalloonAnimation("url('../images/balloon.png')");
-    }
-  }
+
 
   useEffect(() => {
     let timer;
@@ -258,7 +270,7 @@ function App() {
   });
 
   return (
-    <Div onKeyDown={handleKeyDown} onKeyUp={handleKeyUp} tabIndex="0">
+    <Div tabIndex="0">
       <Title>CARROT QUEST 🐷</Title>
       <StartGame start={startGame} status={promptStatus} />
       <GameOver restart={startGame} status={promptStatus} highscore={highscore} score={score} />
