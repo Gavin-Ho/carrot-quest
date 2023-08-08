@@ -4,17 +4,17 @@ import styled from "styled-components";
 import StartGame from "./StartGame";
 import GameOver from "./GameOver";
 
-var chew = new Audio(process.env.PUBLIC_URL + '/audio/chew-cropped.mp3');
-
+const chew = new Audio(process.env.PUBLIC_URL + '/audio/chew-cropped.mp3');
 chew.volume = 0.5;
+chew.preload = 'auto';
 
 var gameoverSound = new Audio('../audio/mixkit-arcade-retro-game-over-213.wav');
 gameoverSound.volume = 0.5;
 
 const RATIO = 2;
 
-const GAMEBOX_HEIGHT = 320 * RATIO;
-const GAMEBOX_WIDTH = 180 * RATIO;
+const GAMEBOX_HEIGHT = 300 * RATIO;
+const GAMEBOX_WIDTH = 200 * RATIO;
 
 const BALLOON_HEIGHT = 65 * RATIO;
 const BALLOON_WIDTH = 45 * RATIO;
@@ -23,8 +23,8 @@ const BALLOON_X = (GAMEBOX_WIDTH / 2) - (BALLOON_WIDTH / 2);
 const OBS_HEIGHT = 22 * RATIO;
 const OBS_WIDTH = 33 * RATIO;
 
-const CLOUD_HEIGHT = 12 * RATIO;
-const CLOUD_WIDTH = 41 * RATIO;
+const CLOUD_HEIGHT = 12 * 1.5 * RATIO;
+const CLOUD_WIDTH = 41 * 1.5 * RATIO;
 
 function App() {
   const [balloonPos, setBalloonPos] = useState(BALLOON_X);
@@ -46,6 +46,8 @@ function App() {
 
   const backgroundMusicRef = useRef(new Audio('../audio/661248__magmadiverrr__video-game-menu-music.mp3'));
 
+
+  // BACKGROUND MUSIC
   useEffect(() => {
     const backgroundMusic = backgroundMusicRef.current;
     if (gameOn) {
@@ -64,6 +66,15 @@ function App() {
     };
   }, [gameOn]);
 
+
+  // PLAY AUDIO FUNCTION
+  const playAudio = (audio) => {
+    audio.currentTime = 0;
+    audio.play();
+  };
+
+
+  // START GAME
   function startGame() {
     setBalloonPos(BALLOON_X);
     setObstacles([]);
@@ -75,8 +86,10 @@ function App() {
     setPromptStatus("");
   }
 
+
+  // EMD GAME
   function endGame() {
-    gameoverSound.play();
+    playAudio(gameoverSound);
     setBalloonPos(BALLOON_X);
     setObstacles([]);
     setClouds([]);
@@ -89,13 +102,15 @@ function App() {
     }
   }
 
-  //  Balloon movement
+  // BALLOON MECHANICS
   useEffect(() => {
     const handleKeyDown = (event) => {
       if (event.key === "ArrowRight" && balloonPos < GAMEBOX_WIDTH - BALLOON_WIDTH) {
         setPressedKey("ArrowRight");
+        setBalloonAnimation("url('../images/balloon_right.png')");
       } else if (event.key === "ArrowLeft" && balloonPos > 0) {
         setPressedKey("ArrowLeft");
+        setBalloonAnimation("url('../images/balloon_left.png')");
       }
     };
 
@@ -106,137 +121,115 @@ function App() {
       }
     };
 
-    document.addEventListener('keydown', handleKeyDown);
+    const handleKeyPress = (event) => {
+      handleKeyDown(event);
+    };
+
+    document.addEventListener('keydown', handleKeyPress);
     document.addEventListener('keyup', handleKeyUp);
 
+    let timer;
+
+    if (pressedKey === "ArrowRight" && balloonPos < GAMEBOX_WIDTH - BALLOON_WIDTH) {
+      timer = setInterval(() => {
+        setBalloonPos((balloonPos) => Math.min(balloonPos + 3, GAMEBOX_WIDTH - BALLOON_WIDTH));
+      }, 10);
+    } else if (pressedKey === "ArrowLeft" && balloonPos > 0) {
+      timer = setInterval(() => {
+        setBalloonPos((balloonPos) => Math.max(balloonPos - 3, 0));
+      }, 10);
+    }
+
     return () => {
-      document.removeEventListener('keydown', handleKeyDown);
+      document.removeEventListener('keydown', handleKeyPress);
       document.removeEventListener('keyup', handleKeyUp);
+      clearInterval(timer);
     };
   }, [pressedKey, balloonPos]);
 
-  function handleMouseDownLeft() {
-    setPressedKey("ArrowLeft");
-  }
-
-  function handleMouseDownRight() {
-    setPressedKey("ArrowRight");
-  }
-
-  function handleMouseUp() {
-    setPressedKey(null);
-    setBalloonAnimation("url('../images/balloon.png')");
-  }
 
 
-
+  // OBSTACLE AND CLOUD MECHANICS
   useEffect(() => {
-    let timer;
-    if (pressedKey === "ArrowRight" && balloonPos < GAMEBOX_WIDTH - BALLOON_WIDTH) {
-      timer = setInterval(() => {
-        setBalloonPos((balloonPos) => balloonPos + 3);
-      }, 10);
-      setBalloonAnimation("url('../images/balloon_right.png')");
-    } else if (pressedKey === "ArrowLeft" && balloonPos > 0) {
-      timer = setInterval(() => {
-        setBalloonPos((balloonPos) => balloonPos - 3);
-      }, 10);
-      setBalloonAnimation("url('../images/balloon_left.png')");
-    }
-    return () => {
-      clearInterval(timer);
-    };
-  }, [balloonPos, pressedKey]);
-
-
-  useEffect(() => {
-    let delay = 1000; // starting delay
+    let obstacleDelay = 700; // starting delay for adding obstacles
+    let obstacleSpeed = 4; // initial speed for moving obstacles
+    let cloudTimeout;
+    let moveCloudTimeout;
     let obsTimeout;
-    const addObstacle = () => {
-      // Add new obstacles at a random position and time
-      setObstacles((prevObstacles) => {
-        return [...prevObstacles, { x: Math.floor(Math.random() * (GAMEBOX_WIDTH - OBS_WIDTH)), y: -OBS_HEIGHT }];
-      });
+    let speedTimeout;
 
-      delay = Math.max(500, delay - 10); // decrease delay by 10ms, but keep it above 500ms
+
+    // Add new obstacles at a random position
+    const addObstacle = () => {
+      setObstacles((prevObstacles) => [
+        ...prevObstacles,
+        { x: Math.floor(Math.random() * (GAMEBOX_WIDTH - OBS_WIDTH)), y: -OBS_HEIGHT },
+      ]);
+      obstacleDelay = Math.max(700, obstacleDelay - 10); // decrease delay by 10ms, but keep it above 500ms
       if (gameOn) {
-        obsTimeout = setTimeout(addObstacle, delay);
+        obsTimeout = setTimeout(addObstacle, obstacleDelay);
       }
+
+
     };
 
-    if (gameOn) {
-      obsTimeout = setTimeout(addObstacle, delay);
-    }
-    return () => clearTimeout(obsTimeout);
-  }, [gameOn]);
-
-  useEffect(() => {
-    let speed = 4;
-    let speedTimeout;
+    // Move obstacles downwards
     const moveObstacle = () => {
-      // Move obstacles downward
       setObstacles((obstacles) => {
-        if (speed < 15) {
-          speed += 0.005;
-        } else if (speed >= 15)
-          speed = 15;
-        return obstacles.map((obstacle) => (
-          { ...obstacle, y: obstacle.y + speed }
-        ));
+        if (obstacleSpeed < 15) {
+          obstacleSpeed += 0.01;
+        } else if (obstacleSpeed >= 15) {
+          obstacleSpeed = 15;
+        }
+        return obstacles.map((obstacle) => ({ ...obstacle, y: obstacle.y + obstacleSpeed }));
       });
+
       if (gameOn) {
         speedTimeout = setTimeout(moveObstacle, 24);
       }
-    }
-    if (gameOn) {
-      speedTimeout = setTimeout(moveObstacle, 24);
-    }
-    return () => clearTimeout(speedTimeout);
-  }, [gameOn]);
+    };
 
-  useEffect(() => {
-    let cloudTimeout;
+    // Add new clouds at a random position
     const addCloud = () => {
-      setClouds((prevClouds) => {
-        // Add new clouds at a random position and time
-        return [...prevClouds, { x: Math.floor(Math.random() * (GAMEBOX_WIDTH) - CLOUD_WIDTH / 2), y: -CLOUD_HEIGHT }];
-      });
+      setClouds((prevClouds) => [
+        ...prevClouds,
+        { x: Math.floor(Math.random() * (GAMEBOX_WIDTH) - CLOUD_WIDTH / 2), y: -CLOUD_HEIGHT },
+      ]);
       if (gameOn) {
-        cloudTimeout = setTimeout(addCloud, 2000);
+        cloudTimeout = setTimeout(addCloud, 3500);
       }
     };
-    if (gameOn) {
-      cloudTimeout = setTimeout(addCloud, 2000);
-    }
 
-    return () => {
-      clearTimeout(cloudTimeout);
-    };
-  }, [gameOn]);
-
-
-  useEffect(() => {
-    let moveCloudTimeout;
+    // Move clouds downwards
     const moveClouds = () => {
       setClouds((clouds) => {
-        // Move clouds downwards
-        const newClouds = clouds.map((cloud) => ({ ...cloud, y: cloud.y + 3 }));
-
-        // Remove clouds that are outside the game border
+        const newClouds = clouds.map((cloud) => ({ ...cloud, y: cloud.y + 3.5 }));
         return newClouds.filter((cloud) => cloud.y < GAMEBOX_HEIGHT);
       });
       if (gameOn) {
-        moveCloudTimeout = setTimeout(moveClouds, 48);
+        moveCloudTimeout = setTimeout(moveClouds, 60);
       }
-    }
+    };
+
+
     if (gameOn) {
-      moveCloudTimeout = setTimeout(moveClouds, 48);
+      obsTimeout = setTimeout(addObstacle, obstacleDelay);
+      speedTimeout = setTimeout(moveObstacle, 24);
+      cloudTimeout = setTimeout(addCloud, 3500);
+      moveCloudTimeout = setTimeout(moveClouds, 60);
     }
-    return () => clearTimeout(moveCloudTimeout);
+
+    return () => {
+      clearTimeout(obsTimeout);
+      clearTimeout(speedTimeout);
+      clearTimeout(cloudTimeout);
+      clearTimeout(moveCloudTimeout);
+    };
   }, [gameOn]);
 
 
-  // Detect obstacle collision
+
+  // DETECT OBSTACLE COLLISION
   useEffect(() => {
     const isColliding = obstacles.some((obstacle) => (
       balloonPos + BALLOON_WIDTH >= obstacle.x &&
@@ -246,7 +239,7 @@ function App() {
     ));
 
     if (isColliding) {
-      chew.play();
+      playAudio(chew);
       setScore((prevScore) => prevScore + 1);
       setObstacles((prevObstacles) => {
         return prevObstacles.filter((obstacle) => {
@@ -261,6 +254,8 @@ function App() {
     }
   }, [balloonPos, obstacles]);
 
+
+  // END GAME IF USER MISSES OBSTACLE
   useEffect(() => {
     obstacles.forEach((obstacle) => {
       if (obstacle.y >= GAMEBOX_HEIGHT) {
@@ -276,8 +271,8 @@ function App() {
       <GameOver restart={startGame} status={promptStatus} highscore={highscore} score={score} />
       <GameBox height={GAMEBOX_HEIGHT} width={GAMEBOX_WIDTH}>
         <div className="w-full h-full flex">
-          <div className="w-[50%] h-full z-10" onMouseDown={handleMouseDownLeft} onMouseUp={handleMouseUp}></div>
-          <div className="w-[50%] h-full z-10" onMouseDown={handleMouseDownRight} onMouseUp={handleMouseUp}></div>
+          <div className="w-[50%] h-full z-10"></div>
+          <div className="w-[50%] h-full z-10"></div>
         </div>
         <CarrotScore>{score} 🥕</CarrotScore>
         {obstacles.map((obstacle, index) => (
@@ -341,7 +336,7 @@ const AirBalloon = styled.div`
   background-image: ${(props) => props.animation}; 
   background-size: cover;
   background-position: center;
-  top: 475px;
+  top: 450px;
   left: ${(props) => props.left}px;
   z-index: 2;
 `
