@@ -151,7 +151,7 @@ function App() {
 
   // OBSTACLE AND CLOUD MECHANICS
   useEffect(() => {
-    let obstacleDelay = 700; // starting delay for adding obstacles
+    let obstacleDelay = 1000; // starting delay for adding obstacles
     let obstacleSpeed = 4; // initial speed for moving obstacles
     let cloudTimeout;
     let moveCloudTimeout;
@@ -165,7 +165,7 @@ function App() {
         ...prevObstacles,
         { x: Math.floor(Math.random() * (GAMEBOX_WIDTH - OBS_WIDTH)), y: -OBS_HEIGHT },
       ]);
-      obstacleDelay = Math.max(700, obstacleDelay - 10); // decrease delay by 10ms, but keep it above 500ms
+      obstacleDelay = Math.max(700, obstacleDelay - 20); // decrease delay by 10ms, but keep it above 500ms
       if (gameOn) {
         obsTimeout = setTimeout(addObstacle, obstacleDelay);
       }
@@ -196,7 +196,7 @@ function App() {
         { x: Math.floor(Math.random() * (GAMEBOX_WIDTH) - CLOUD_WIDTH / 2), y: -CLOUD_HEIGHT },
       ]);
       if (gameOn) {
-        cloudTimeout = setTimeout(addCloud, 3500);
+        cloudTimeout = setTimeout(addCloud, 4000);
       }
     };
 
@@ -215,7 +215,7 @@ function App() {
     if (gameOn) {
       obsTimeout = setTimeout(addObstacle, obstacleDelay);
       speedTimeout = setTimeout(moveObstacle, 24);
-      cloudTimeout = setTimeout(addCloud, 3500);
+      cloudTimeout = setTimeout(addCloud, 4000);
       moveCloudTimeout = setTimeout(moveClouds, 60);
     }
 
